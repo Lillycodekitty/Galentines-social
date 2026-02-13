@@ -99,9 +99,15 @@ const messagesContainer = document.getElementById('messagesContainer');
 const postButton = document.getElementById('postButton');
 const promptButton = document.getElementById('promptButton');
 const nicknameInput = document.getElementById('nicknameInput');
-const messageInput = document.getElementById('messageInput');let messages = JSON.parse(localStorage.getItem('galentineMessages')) || []; const prompts = [ 'Send your weirdest crush confession 😏', 'Share a meme that screams us 😂', 'Describe your perfect snack date 🍕', 'Compliment the person above you ❤️', 'Post your cutest selfie 😘' ];
-
-function renderMessages() { messagesContainer.innerHTML = ''; messages.forEach((msg, index) => { const card = document.createElement('div'); card.classList.add('messageCard'); card.innerHTML = <span>${msg.nickname}:</span> ${msg.text};
+const messageInput = document.getElementById('messageInput');
+let messages = JSON.parse(localStorage.getItem('galentineMessages')) || [];
+const prompts = [
+  'Send your weirdest crush confession 😏',
+  'Share a meme that screams us 😂',
+  'Describe your perfect snack date 🍕',
+  'Compliment the person above you ❤️',
+  'Post your cutest selfie 😘'
+];function renderMessages() { messagesContainer.innerHTML = ''; messages.forEach(msg => { const card = document.createElement('div'); card.classList.add('messageCard'); card.innerHTML = <span>${msg.nickname}:</span> ${msg.text};
 
 const emojiDiv = document.createElement('div');
 emojiDiv.classList.add('emojiButtons');
@@ -123,11 +129,11 @@ promptButton.onclick = () => { const prompt = prompts[Math.floor(Math.random() *
 
 renderMessages();
 
-// Simple confetti effect function launchConfetti(){ const canvas = document.getElementById('confetti'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+function launchConfetti(){ const canvas = document.getElementById('confetti'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 
 const confetti = []; for(let i=0;i<100;i++){ confetti.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*6+4, d: Math.random()*100}); }
 
-let angle = 0; function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); confetti.forEach(c => { ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI*2); ctx.fillStyle = hsl(${Math.random()*360}, 100%, 50%); ctx.fill(); c.y += 2; if(c.y > canvas.height) c.y = 0; }); angle += 0.01; requestAnimationFrame(draw); } draw(); } </script>
+function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); confetti.forEach(c => { ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI*2); ctx.fillStyle = hsl(${Math.random()*360}, 100%, 50%); ctx.fill(); c.y += 2; if(c.y > canvas.height) c.y = 0; }); requestAnimationFrame(draw); } draw(); } </script>
 
 </body>
 </html>
