@@ -297,27 +297,34 @@
   <canvas id="confetti"></canvas>
 
   <script>
-    // Create floating bows in background
+    // Create floating bows in background with fixed positions
     function createFloatingBows() {
-      const bowCount = 12;
-      for (let i = 0; i < bowCount; i++) {
+      const positions = [
+        { left: '10%', top: '15%' },
+        { left: '85%', top: '10%' },
+        { left: '15%', top: '70%' },
+        { left: '90%', top: '60%' },
+        { left: '5%', top: '40%' },
+        { left: '80%', top: '80%' },
+        { left: '25%', top: '25%' },
+        { left: '70%', top: '35%' },
+        { left: '45%', top: '10%' },
+        { left: '60%', top: '70%' },
+        { left: '20%', top: '85%' },
+        { left: '75%', top: '20%' }
+      ];
+      
+      positions.forEach((pos, i) => {
         const bow = document.createElement('div');
         bow.classList.add('floating-bow');
         bow.textContent = '𐙚';
         
-        // Random position
-        const randomX = Math.random() * 100;
-        const randomY = Math.random() * 100;
-        const randomDelay = Math.random() * 2;
-        const randomDuration = 5 + Math.random() * 4;
-        
-        bow.style.left = randomX + '%';
-        bow.style.top = randomY + '%';
-        bow.style.animationDelay = randomDelay + 's';
-        bow.style.animationDuration = randomDuration + 's';
+        bow.style.left = pos.left;
+        bow.style.top = pos.top;
+        bow.style.animationDelay = (i * 0.3) + 's';
         
         document.body.appendChild(bow);
-      }
+      });
     }
 
     createFloatingBows();
