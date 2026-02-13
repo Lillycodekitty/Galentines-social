@@ -296,7 +296,26 @@
   <div class="messagesContainer" id="messagesContainer"></div>
   <canvas id="confetti"></canvas>
 
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+
   <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyB_7fgKN7Ktz-81_dGp14SQdYP2pu1mY_E",
+      authDomain: "galentines-social-64a43.firebaseapp.com",
+      databaseURL: "https://galentines-social-64a43-default-rtdb.firebaseio.com",
+      projectId: "galentines-social-64a43",
+      storageBucket: "galentines-social-64a43.appspot.com",
+      messagingSenderId: "782814566372",
+      appId: "1:782814566372:web:9b1f0c8c5e3d2a1b0f"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const messagesRef = database.ref('galentineMessages');
     // Create floating bows in background with fixed positions
     function createFloatingBows() {
       const positions = [
@@ -335,7 +354,7 @@
     const nicknameInput = document.getElementById('nicknameInput');
     const messageInput = document.getElementById('messageInput');
 
-    let messages = JSON.parse(localStorage.getItem('galentineMessages')) || [];
+    let messages = [];
 
     const prompts = [
       'Send your weirdest crush confession 😏',
@@ -418,8 +437,12 @@
               msg.reactions[emoji] = 0;
             }
             msg.reactions[emoji]++;
-            localStorage.setItem('galentineMessages', JSON.stringify(messages));
-            renderMessages();
+            
+            // Update Firebase with the fbKey
+            if (msg.fbKey) {
+              messagesRef.child(msg.fbKey).update({ reactions: msg.reactions });
+            }
+            
             launchConfetti();
           };
 
@@ -440,15 +463,15 @@
         return;
       }
 
-      messages.unshift({
+      const newMessage = {
         nickname,
         text,
         reactions: {},
         timestamp: new Date().getTime()
-      });
+      };
 
-      localStorage.setItem('galentineMessages', JSON.stringify(messages));
-      renderMessages();
+      // Push to Firebase
+      messagesRef.push(newMessage);
       messageInput.value = '';
       nicknameInput.value = '';
       launchConfetti();
@@ -487,6 +510,24 @@
     };
 
     renderMessages();
+
+    // Listen for real-time updates from Firebase
+    messagesRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        messages = [];
+        const msgArray = [];
+        Object.keys(data).forEach(key => {
+          msgArray.push({ ...data[key], fbKey: key });
+        });
+        // Sort by timestamp, newest first
+        messages = msgArray.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        renderMessages();
+      } else {
+        messages = [];
+        renderMessages();
+      }
+    });
 
     function launchConfetti() {
       const canvas = document.getElementById('confetti');
