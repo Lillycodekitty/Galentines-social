@@ -52,6 +52,24 @@
       z-index: 2;
     }
 
+    .floating-bow {
+      position: fixed;
+      font-size: 2.5em;
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 0;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-20px) rotate(5deg);
+      }
+    }
+
     h1 {
       margin-bottom: 20px;
       text-shadow: 2px 2px #fff;
@@ -279,6 +297,32 @@
   <canvas id="confetti"></canvas>
 
   <script>
+    // Create floating bows in background
+    function createFloatingBows() {
+      const bowCount = 12;
+      for (let i = 0; i < bowCount; i++) {
+        const bow = document.createElement('div');
+        bow.classList.add('floating-bow');
+        bow.textContent = '𐙚';
+        
+        // Random position
+        const randomX = Math.random() * 100;
+        const randomY = Math.random() * 100;
+        const randomDelay = Math.random() * 2;
+        const randomDuration = 5 + Math.random() * 4;
+        
+        bow.style.left = randomX + '%';
+        bow.style.top = randomY + '%';
+        bow.style.animationDelay = randomDelay + 's';
+        bow.style.animationDuration = randomDuration + 's';
+        bow.style.opacity = 0.2 + Math.random() * 0.3;
+        
+        document.body.appendChild(bow);
+      }
+    }
+
+    createFloatingBows();
+
     const messagesContainer = document.getElementById('messagesContainer');
     const postButton = document.getElementById('postButton');
     const promptButton = document.getElementById('promptButton');
