@@ -296,43 +296,7 @@
   <div class="messagesContainer" id="messagesContainer"></div>
   <canvas id="confetti"></canvas>
 
-  <!-- Firebase Compat SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-compat-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-compat-database.js"></script>
-
   <script>
-    // Wait for Firebase to load
-    function initializeFirebase() {
-      if (typeof firebase === 'undefined') {
-        setTimeout(initializeFirebase, 100);
-        return;
-      }
-
-      // Firebase Config
-      const firebaseConfig = {
-        apiKey: "AIzaSyB_7fgKN7Ktz-81_dGp14SQdYP2pu1mY_E",
-        authDomain: "galentines-social-64a43.firebaseapp.com",
-        databaseURL: "https://galentines-social-64a43-default-rtdb.firebaseio.com",
-        projectId: "galentines-social-64a43",
-        storageBucket: "galentines-social-64a43.appspot.com",
-        messagingSenderId: "782814566372",
-        appId: "1:782814566372:web:9b1f0c8c5e3d2a1b0f"
-      };
-
-      // Initialize Firebase
-      firebase.initializeApp(firebaseConfig);
-      const database = firebase.database();
-      const messagesRef = database.ref('galentineMessages');
-      
-      console.log('Firebase initialized successfully');
-      
-      // Now run the rest of the app
-      startApp(messagesRef);
-    }
-
-    initializeFirebase();
-
-    function startApp(messagesRef) {
       // Create floating bows in background with fixed positions
       function createFloatingBows() {
       const positions = [
@@ -371,6 +335,8 @@
     const nicknameInput = document.getElementById('nicknameInput');
     const messageInput = document.getElementById('messageInput');
 
+    const databaseURL = "https://galentines-social-64a43-default-rtdb.firebaseio.com";
+    const apiKey = "AIzaSyB_7fgKN7Ktz-81_dGp14SQdYP2pu1mY_E";
     let messages = [];
 
     const prompts = [
@@ -455,12 +421,16 @@
             }
             msg.reactions[emoji]++;
             
-            // Update Firebase with the fbKey
+            // Update Firebase via REST API
             if (msg.fbKey) {
-              messagesRef.child(msg.fbKey).update({ reactions: msg.reactions });
+              fetch(`${databaseURL}/galentineMessages/${msg.fbKey}.json?auth=${apiKey}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reactions: msg.reactions })
+              }).then(() => {
+                launchConfetti();
+              }).catch(err => console.error('Error updating reaction:', err));
             }
-            
-            launchConfetti();
           };
 
           emojiDiv.appendChild(btn);
@@ -487,11 +457,17 @@
         timestamp: new Date().getTime()
       };
 
-      // Push to Firebase
-      messagesRef.push(newMessage);
-      messageInput.value = '';
-      nicknameInput.value = '';
-      launchConfetti();
+      // Push to Firebase via REST API
+      fetch(`${databaseURL}/galentineMessages.json?auth=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newMessage)
+      }).then(() => {
+        messageInput.value = '';
+        nicknameInput.value = '';
+        launchConfetti();
+        loadMessages();
+      }).catch(err => console.error('Error posting message:', err));
     };
 
     promptButton.onclick = () => {
@@ -528,23 +504,33 @@
 
     renderMessages();
 
-    // Listen for real-time updates from Firebase
-    messagesRef.on('value', (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        messages = [];
-        const msgArray = [];
-        Object.keys(data).forEach(key => {
-          msgArray.push({ ...data[key], fbKey: key });
-        });
-        // Sort by timestamp, newest first
-        messages = msgArray.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-        renderMessages();
-      } else {
-        messages = [];
-        renderMessages();
-      }
-    });
+    // Load messages from Firebase via REST API
+    function loadMessages() {
+      fetch(`${databaseURL}/galentineMessages.json?auth=${apiKey}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && typeof data === 'object') {
+            messages = [];
+            const msgArray = [];
+            Object.keys(data).forEach(key => {
+              msgArray.push({ ...data[key], fbKey: key });
+            });
+            // Sort by timestamp, newest first
+            messages = msgArray.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            renderMessages();
+          } else {
+            messages = [];
+            renderMessages();
+          }
+        })
+        .catch(err => console.error('Error loading messages:', err));
+    }
+
+    // Load messages initially
+    loadMessages();
+
+    // Refresh messages every 2 seconds
+    setInterval(loadMessages, 2000);
 
     function launchConfetti() {
       const canvas = document.getElementById('confetti');
@@ -588,7 +574,6 @@
 
       draw();
     }
-    } // End of startApp function
   </script>
 </body>
 </html>
