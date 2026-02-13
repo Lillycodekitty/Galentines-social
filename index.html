@@ -107,7 +107,7 @@ const prompts = [
   'Describe your perfect snack date 🍕',
   'Compliment the person above you ❤️',
   'Post your cutest selfie 😘'
-];function renderMessages() { messagesContainer.innerHTML = ''; messages.forEach(msg => { const card = document.createElement('div'); card.classList.add('messageCard'); card.innerHTML = <span>${msg.nickname}:</span> ${msg.text};
+];function renderMessages() { messagesContainer.innerHTML = ''; messages.forEach(msg => { const card = document.createElement('div'); card.classList.add('messageCard'); card.innerHTML = `<span>${msg.nickname}:</span> ${msg.text}`;
 
 const emojiDiv = document.createElement('div');
 emojiDiv.classList.add('emojiButtons');
