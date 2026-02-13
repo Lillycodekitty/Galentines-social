@@ -44,7 +44,7 @@
         radial-gradient(circle at 80% 80%, rgba(221, 160, 221, 0.1) 0%, transparent 50%),
         radial-gradient(circle at 40% 20%, rgba(255, 20, 147, 0.08) 0%, transparent 50%);
       pointer-events: none;
-      z-index: 1;
+      z-index: 0;
     }
 
     body > * {
@@ -315,7 +315,6 @@
         bow.style.top = randomY + '%';
         bow.style.animationDelay = randomDelay + 's';
         bow.style.animationDuration = randomDuration + 's';
-        bow.style.opacity = 0.2 + Math.random() * 0.3;
         
         document.body.appendChild(bow);
       }
