@@ -1,0 +1,133 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galentine's Hub</title>
+<style>
+  body {
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    background: linear-gradient(135deg, #ffb6c1, #dda0dd);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+  }
+  h1 {
+    margin-bottom: 10px;
+    text-shadow: 1px 1px #fff;
+  }
+  #nicknameInput {
+    padding: 5px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    margin-bottom: 10px;
+  }
+  #messageInput {
+    padding: 5px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    width: 200px;
+  }
+  #postButton, #promptButton {
+    padding: 5px 10px;
+    font-size: 16px;
+    margin-left: 5px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    background-color: #ff69b4;
+    color: white;
+  }
+  .messageCard {
+    background-color: #fff0f5;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 10px;
+    width: 250px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    position: relative;
+    word-wrap: break-word;
+  }
+  .messageCard span {
+    font-weight: bold;
+    color: #c71585;
+  }
+  .emojiButtons {
+    margin-top: 5px;
+  }
+  .emojiButtons button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    margin-right: 5px;
+  }
+  #messagesContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 300px;
+  }
+  #confetti {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+  }
+</style>
+</head>
+<body>
+<h1>Galentine's Hub 💖</h1>
+<input type="text" id="nicknameInput" placeholder="Your nickname" />
+<br>
+<input type="text" id="messageInput" placeholder="Write a message..." />
+<button id="postButton">Post</button>
+<button id="promptButton">Galentine's Dare!</button>
+<div id="messagesContainer"></div>
+<canvas id="confetti"></canvas>
+<script>
+const messagesContainer = document.getElementById('messagesContainer');
+const postButton = document.getElementById('postButton');
+const promptButton = document.getElementById('promptButton');
+const nicknameInput = document.getElementById('nicknameInput');
+const messageInput = document.getElementById('messageInput');let messages = JSON.parse(localStorage.getItem('galentineMessages')) || []; const prompts = [ 'Send your weirdest crush confession 😏', 'Share a meme that screams us 😂', 'Describe your perfect snack date 🍕', 'Compliment the person above you ❤️', 'Post your cutest selfie 😘' ];
+
+function renderMessages() { messagesContainer.innerHTML = ''; messages.forEach((msg, index) => { const card = document.createElement('div'); card.classList.add('messageCard'); card.innerHTML = <span>${msg.nickname}:</span> ${msg.text};
+
+const emojiDiv = document.createElement('div');
+emojiDiv.classList.add('emojiButtons');
+['❤️','😂','😏','🔥'].forEach(emoji => {
+  const btn = document.createElement('button');
+  btn.innerText = emoji;
+  btn.onclick = () => alert(`You reacted with ${emoji} to ${msg.nickname}'s post!`);
+  emojiDiv.appendChild(btn);
+});
+
+card.appendChild(emojiDiv);
+messagesContainer.appendChild(card);
+
+}); }
+
+postButton.onclick = () => { const nickname = nicknameInput.value.trim() || 'Mystery Gal'; const text = messageInput.value.trim(); if(text === '') return; messages.push({nickname, text}); localStorage.setItem('galentineMessages', JSON.stringify(messages)); renderMessages(); messageInput.value = ''; launchConfetti(); };
+
+promptButton.onclick = () => { const prompt = prompts[Math.floor(Math.random() * prompts.length)]; alert(prompt); };
+
+renderMessages();
+
+// Simple confetti effect function launchConfetti(){ const canvas = document.getElementById('confetti'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+
+const confetti = []; for(let i=0;i<100;i++){ confetti.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*6+4, d: Math.random()*100}); }
+
+let angle = 0; function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); confetti.forEach(c => { ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI*2); ctx.fillStyle = hsl(${Math.random()*360}, 100%, 50%); ctx.fill(); c.y += 2; if(c.y > canvas.height) c.y = 0; }); angle += 0.01; requestAnimationFrame(draw); } draw(); } </script>
+
+</body>
+</html>
