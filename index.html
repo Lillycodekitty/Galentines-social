@@ -344,7 +344,7 @@
     async function loadMessages() {
       try {
         const res = await fetch(JSONBIN_URL, {
-          headers: { "X-Access-Key": "$2b$10$jklmn1234567890abcdef" }
+          headers: { "X-Master-Key": "$2a$10$s.voKQqXYBrZuoY3Cesun.1yi4GcHQBRbXt3m912EytK84Q4J8Hwu" }
         });
         const data = await res.json();
         messages = data.record?.messages || [];
@@ -361,7 +361,7 @@
         await fetch(JSONBIN_URL, {
           method: 'PUT',
           headers: { 
-            "X-Access-Key": "$2b$10$jklmn1234567890abcdef",
+            "X-Master-Key": "$2a$10$s.voKQqXYBrZuoY3Cesun.1yi4GcHQBRbXt3m912EytK84Q4J8Hwu",
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ messages })
