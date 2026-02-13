@@ -335,7 +335,46 @@
     const nicknameInput = document.getElementById('nicknameInput');
     const messageInput = document.getElementById('messageInput');
 
-    let messages = JSON.parse(localStorage.getItem('galentineMessages')) || [];
+    let messages = [];
+    
+    // JSONBin API
+    const JSONBIN_ID = "677d3b5ce41b4d34e4c4c5e6";
+    const JSONBIN_KEY = "$2b$10$A7vJ3qK8mN9pL2qR5sT6uU";
+    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}`;
+    
+    async function loadMessages() {
+      try {
+        const res = await fetch(JSONBIN_URL, {
+          headers: { "X-Master-Key": JSONBIN_KEY }
+        });
+        const data = await res.json();
+        messages = data.record?.messages || [];
+        renderMessages();
+      } catch (err) {
+        console.log('Using local storage fallback');
+        messages = JSON.parse(localStorage.getItem('galentineMessages')) || [];
+        renderMessages();
+      }
+    }
+    
+    async function saveMessages() {
+      try {
+        await fetch(JSONBIN_URL, {
+          method: 'PUT',
+          headers: { 
+            "X-Master-Key": JSONBIN_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ messages })
+        });
+      } catch (err) {
+        console.error('Error saving to JSONBin:', err);
+        localStorage.setItem('galentineMessages', JSON.stringify(messages));
+      }
+    }
+    
+    // Load messages on page load
+    loadMessages();
 
     const prompts = [
       'Send your weirdest crush confession 😏',
@@ -418,7 +457,7 @@
               msg.reactions[emoji] = 0;
             }
             msg.reactions[emoji]++;
-            localStorage.setItem('galentineMessages', JSON.stringify(messages));
+            saveMessages();
             renderMessages();
             launchConfetti();
           };
@@ -448,7 +487,7 @@
       };
 
       messages.unshift(newMessage);
-      localStorage.setItem('galentineMessages', JSON.stringify(messages));
+      saveMessages();
       renderMessages();
       messageInput.value = '';
       nicknameInput.value = '';
@@ -489,14 +528,8 @@
 
     renderMessages();
 
-    // Refresh messages every 1 second to sync across tabs
-    setInterval(() => {
-      const updatedMessages = JSON.parse(localStorage.getItem('galentineMessages')) || [];
-      if (JSON.stringify(updatedMessages) !== JSON.stringify(messages)) {
-        messages = updatedMessages;
-        renderMessages();
-      }
-    }, 1000);
+    // Refresh messages every 2 seconds from JSONBin
+    setInterval(loadMessages, 2000);
 
     function launchConfetti() {
       const canvas = document.getElementById('confetti');
