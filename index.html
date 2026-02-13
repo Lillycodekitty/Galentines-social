@@ -1,139 +1,423 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Galentine's Hub</title>
-<style>
-  body {
-    font-family: 'Comic Sans MS', cursive, sans-serif;
-    background: linear-gradient(135deg, #ffb6c1, #dda0dd);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    min-height: 100vh;
-    padding: 20px;
-    color: #333;
-  }
-  h1 {
-    margin-bottom: 10px;
-    text-shadow: 1px 1px #fff;
-  }
-  #nicknameInput {
-    padding: 5px;
-    font-size: 16px;
-    border-radius: 5px;
-    border: none;
-    margin-bottom: 10px;
-  }
-  #messageInput {
-    padding: 5px;
-    font-size: 16px;
-    border-radius: 5px;
-    border: none;
-    width: 200px;
-  }
-  #postButton, #promptButton {
-    padding: 5px 10px;
-    font-size: 16px;
-    margin-left: 5px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    background-color: #ff69b4;
-    color: white;
-  }
-  .messageCard {
-    background-color: #fff0f5;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 10px;
-    width: 250px;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-    position: relative;
-    word-wrap: break-word;
-  }
-  .messageCard span {
-    font-weight: bold;
-    color: #c71585;
-  }
-  .emojiButtons {
-    margin-top: 5px;
-  }
-  .emojiButtons button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-    margin-right: 5px;
-  }
-  #messagesContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 300px;
-  }
-  #confetti {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 9999;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galentine's Hub</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(135deg, #ffb6c1, #dda0dd);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+      margin: 0;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      text-shadow: 2px 2px #fff;
+      font-size: 2.5em;
+    }
+
+    .input-section {
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #nicknameInput,
+    #messageInput {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 2px solid #ff69b4;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+
+    #nicknameInput {
+      width: 100%;
+    }
+
+    #messageInput {
+      width: 100%;
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    #postButton,
+    #promptButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background-color: #ff69b4;
+      color: white;
+      font-weight: bold;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      transition: background-color 0.3s;
+    }
+
+    #postButton:hover,
+    #promptButton:hover {
+      background-color: #ff1493;
+    }
+
+    #postButton:active,
+    #promptButton:active {
+      transform: scale(0.98);
+    }
+
+    .messagesContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 400px;
+      gap: 15px;
+    }
+
+    .messageCard {
+      background-color: #fff0f5;
+      padding: 15px;
+      border-radius: 12px;
+      width: 100%;
+      box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.15);
+      word-wrap: break-word;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .messageCard .nickname {
+      font-weight: bold;
+      color: #c71585;
+      font-size: 1.1em;
+    }
+
+    .messageCard .text {
+      margin-top: 8px;
+      color: #333;
+      line-height: 1.4;
+    }
+
+    .emojiButtons {
+      margin-top: 10px;
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .emojiButtons button {
+      background: white;
+      border: 2px solid #ff69b4;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 20px;
+      padding: 5px 10px;
+      transition: all 0.2s;
+    }
+
+    .emojiButtons button:hover {
+      background-color: #ffe4f0;
+      transform: scale(1.1);
+    }
+
+    .emojiButtons button.liked {
+      background-color: #ff69b4;
+    }
+
+    .emoji-count {
+      font-size: 12px;
+      color: #666;
+      margin-left: 3px;
+    }
+
+    #confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .dare-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
+      max-width: 300px;
+      text-align: center;
+      animation: popIn 0.3s ease-out;
+    }
+
+    @keyframes popIn {
+      from {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .dare-popup .dare-text {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+
+    .dare-popup button {
+      padding: 10px 20px;
+      background-color: #ff69b4;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+
+    .dare-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+    }
+  </style>
 </head>
 <body>
-<h1>Galentine's Hub 💖</h1>
-<input type="text" id="nicknameInput" placeholder="Your nickname" />
-<br>
-<input type="text" id="messageInput" placeholder="Write a message..." />
-<button id="postButton">Post</button>
-<button id="promptButton">Galentine's Dare!</button>
-<div id="messagesContainer"></div>
-<canvas id="confetti"></canvas>
-<script>
-const messagesContainer = document.getElementById('messagesContainer');
-const postButton = document.getElementById('postButton');
-const promptButton = document.getElementById('promptButton');
-const nicknameInput = document.getElementById('nicknameInput');
-const messageInput = document.getElementById('messageInput');
-let messages = JSON.parse(localStorage.getItem('galentineMessages')) || [];
-const prompts = [
-  'Send your weirdest crush confession 😏',
-  'Share a meme that screams us 😂',
-  'Describe your perfect snack date 🍕',
-  'Compliment the person above you ❤️',
-  'Post your cutest selfie 😘'
-];function renderMessages() { messagesContainer.innerHTML = ''; messages.forEach(msg => { const card = document.createElement('div'); card.classList.add('messageCard'); card.innerHTML = `<span>${msg.nickname}:</span> ${msg.text}`;
+  <h1>Galentine's Hub 💖</h1>
 
-const emojiDiv = document.createElement('div');
-emojiDiv.classList.add('emojiButtons');
-['❤️','😂','😏','🔥'].forEach(emoji => {
-  const btn = document.createElement('button');
-  btn.innerText = emoji;
-  btn.onclick = () => alert(`You reacted with ${emoji} to ${msg.nickname}'s post!`);
-  emojiDiv.appendChild(btn);
-});
+  <div class="input-section">
+    <div class="input-group">
+      <input type="text" id="nicknameInput" placeholder="Enter your nickname" />
+      <textarea id="messageInput" placeholder="Write your Galentine's message..."></textarea>
+      <div class="button-group">
+        <button id="postButton">Post 💌</button>
+        <button id="promptButton">Take a Dare! 🎲</button>
+      </div>
+    </div>
+  </div>
 
-card.appendChild(emojiDiv);
-messagesContainer.appendChild(card);
+  <div class="messagesContainer" id="messagesContainer"></div>
+  <canvas id="confetti"></canvas>
 
-}); }
+  <script>
+    const messagesContainer = document.getElementById('messagesContainer');
+    const postButton = document.getElementById('postButton');
+    const promptButton = document.getElementById('promptButton');
+    const nicknameInput = document.getElementById('nicknameInput');
+    const messageInput = document.getElementById('messageInput');
 
-postButton.onclick = () => { const nickname = nicknameInput.value.trim() || 'Mystery Gal'; const text = messageInput.value.trim(); if(text === '') return; messages.push({nickname, text}); localStorage.setItem('galentineMessages', JSON.stringify(messages)); renderMessages(); messageInput.value = ''; launchConfetti(); };
+    let messages = JSON.parse(localStorage.getItem('galentineMessages')) || [];
 
-promptButton.onclick = () => { const prompt = prompts[Math.floor(Math.random() * prompts.length)]; alert(prompt); };
+    const prompts = [
+      'Send your weirdest crush confession 😏',
+      'Share a meme that screams us 😂',
+      'Describe your perfect snack date 🍕',
+      'Compliment the person above you ❤️',
+      'Post your cutest selfie 😘',
+      'What\'s your love language? 🕯️',
+      'Describe your ideal Galentine\'s date 💕',
+      'What makes someone a perfect match? 👫'
+    ];
 
-renderMessages();
+    function renderMessages() {
+      messagesContainer.innerHTML = '';
+      messages.forEach((msg, index) => {
+        const card = document.createElement('div');
+        card.classList.add('messageCard');
 
-function launchConfetti(){ const canvas = document.getElementById('confetti'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const nicknameEl = document.createElement('div');
+        nicknameEl.classList.add('nickname');
+        nicknameEl.textContent = `${msg.nickname}:`;
 
-const confetti = []; for(let i=0;i<100;i++){ confetti.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*6+4, d: Math.random()*100}); }
+        const textEl = document.createElement('div');
+        textEl.classList.add('text');
+        textEl.textContent = msg.text;
 
-function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); confetti.forEach(c => { ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI*2); ctx.fillStyle = `hsl(${Math.random()*360}, 100%, 50%)`; ctx.fill(); c.y += 2; if(c.y > canvas.height) c.y = 0; }); requestAnimationFrame(draw); } draw(); } </script>
+        card.appendChild(nicknameEl);
+        card.appendChild(textEl);
 
+        const emojiDiv = document.createElement('div');
+        emojiDiv.classList.add('emojiButtons');
+
+        const emojis = ['❤️', '😂', '😏', '🔥'];
+        emojis.forEach(emoji => {
+          const btn = document.createElement('button');
+          btn.innerHTML = `${emoji} <span class="emoji-count">${msg.reactions?.[emoji] || 0}</span>`;
+
+          if (msg.reactions?.[emoji]) {
+            btn.classList.add('liked');
+          }
+
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            if (!msg.reactions) {
+              msg.reactions = {};
+            }
+            if (!msg.reactions[emoji]) {
+              msg.reactions[emoji] = 0;
+            }
+            msg.reactions[emoji]++;
+            localStorage.setItem('galentineMessages', JSON.stringify(messages));
+            renderMessages();
+            launchConfetti();
+          };
+
+          emojiDiv.appendChild(btn);
+        });
+
+        card.appendChild(emojiDiv);
+        messagesContainer.appendChild(card);
+      });
+    }
+
+    postButton.onclick = () => {
+      const nickname = nicknameInput.value.trim() || 'Mystery Gal 💕';
+      const text = messageInput.value.trim();
+
+      if (text === '') {
+        alert('Please write a message! 💌');
+        return;
+      }
+
+      messages.unshift({
+        nickname,
+        text,
+        reactions: {},
+        timestamp: new Date().getTime()
+      });
+
+      localStorage.setItem('galentineMessages', JSON.stringify(messages));
+      renderMessages();
+      messageInput.value = '';
+      nicknameInput.value = '';
+      launchConfetti();
+    };
+
+    promptButton.onclick = () => {
+      const prompt = prompts[Math.floor(Math.random() * prompts.length)];
+
+      const backdrop = document.createElement('div');
+      backdrop.classList.add('dare-backdrop');
+
+      const darePopup = document.createElement('div');
+      darePopup.classList.add('dare-popup');
+
+      const dareText = document.createElement('div');
+      dareText.classList.add('dare-text');
+      dareText.textContent = prompt;
+
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Got It! 💪';
+      closeBtn.onclick = () => {
+        backdrop.remove();
+        darePopup.remove();
+      };
+
+      darePopup.appendChild(dareText);
+      darePopup.appendChild(closeBtn);
+
+      document.body.appendChild(backdrop);
+      document.body.appendChild(darePopup);
+
+      backdrop.onclick = () => {
+        backdrop.remove();
+        darePopup.remove();
+      };
+    };
+
+    renderMessages();
+
+    function launchConfetti() {
+      const canvas = document.getElementById('confetti');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const confettiPieces = [];
+      for (let i = 0; i < 100; i++) {
+        confettiPieces.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          r: Math.random() * 6 + 4,
+          d: Math.random() * 100,
+          color: `hsl(${Math.random() * 360}, 100%, 50%)`
+        });
+      }
+
+      let animationId;
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        confettiPieces.forEach(c => {
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+          ctx.fillStyle = c.color;
+          ctx.fill();
+          c.y += 2;
+          c.x += Math.sin(c.d / 100) * 0.5;
+
+          if (c.y > canvas.height) {
+            c.y = -10;
+            c.x = Math.random() * canvas.width;
+          }
+        });
+
+        if (confettiPieces[0].y < canvas.height) {
+          animationId = requestAnimationFrame(draw);
+        }
+      }
+
+      draw();
+    }
+  </script>
 </body>
 </html>
