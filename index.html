@@ -335,9 +335,7 @@
     const nicknameInput = document.getElementById('nicknameInput');
     const messageInput = document.getElementById('messageInput');
 
-    const databaseURL = "https://galentines-social-64a43-default-rtdb.firebaseio.com";
-    const apiKey = "AIzaSyB_7fgKN7Ktz-81_dGp14SQdYP2pu1mY_E";
-    let messages = [];
+    let messages = JSON.parse(localStorage.getItem('galentineMessages')) || [];
 
     const prompts = [
       'Send your weirdest crush confession 😏',
@@ -420,17 +418,9 @@
               msg.reactions[emoji] = 0;
             }
             msg.reactions[emoji]++;
-            
-            // Update Firebase via REST API
-            if (msg.fbKey) {
-              fetch(`${databaseURL}/galentineMessages/${msg.fbKey}.json?auth=${apiKey}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ reactions: msg.reactions })
-              }).then(() => {
-                launchConfetti();
-              }).catch(err => console.error('Error updating reaction:', err));
-            }
+            localStorage.setItem('galentineMessages', JSON.stringify(messages));
+            renderMessages();
+            launchConfetti();
           };
 
           emojiDiv.appendChild(btn);
@@ -457,17 +447,12 @@
         timestamp: new Date().getTime()
       };
 
-      // Push to Firebase via REST API
-      fetch(`${databaseURL}/galentineMessages.json?auth=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newMessage)
-      }).then(() => {
-        messageInput.value = '';
-        nicknameInput.value = '';
-        launchConfetti();
-        loadMessages();
-      }).catch(err => console.error('Error posting message:', err));
+      messages.unshift(newMessage);
+      localStorage.setItem('galentineMessages', JSON.stringify(messages));
+      renderMessages();
+      messageInput.value = '';
+      nicknameInput.value = '';
+      launchConfetti();
     };
 
     promptButton.onclick = () => {
@@ -504,33 +489,14 @@
 
     renderMessages();
 
-    // Load messages from Firebase via REST API
-    function loadMessages() {
-      fetch(`${databaseURL}/galentineMessages.json?auth=${apiKey}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data && typeof data === 'object') {
-            messages = [];
-            const msgArray = [];
-            Object.keys(data).forEach(key => {
-              msgArray.push({ ...data[key], fbKey: key });
-            });
-            // Sort by timestamp, newest first
-            messages = msgArray.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-            renderMessages();
-          } else {
-            messages = [];
-            renderMessages();
-          }
-        })
-        .catch(err => console.error('Error loading messages:', err));
-    }
-
-    // Load messages initially
-    loadMessages();
-
-    // Refresh messages every 2 seconds
-    setInterval(loadMessages, 2000);
+    // Refresh messages every 1 second to sync across tabs
+    setInterval(() => {
+      const updatedMessages = JSON.parse(localStorage.getItem('galentineMessages')) || [];
+      if (JSON.stringify(updatedMessages) !== JSON.stringify(messages)) {
+        messages = updatedMessages;
+        renderMessages();
+      }
+    }, 1000);
 
     function launchConfetti() {
       const canvas = document.getElementById('confetti');
