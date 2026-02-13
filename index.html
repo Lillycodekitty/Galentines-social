@@ -336,6 +336,7 @@
     const messageInput = document.getElementById('messageInput');
 
     let messages = [];
+    let prevMessages = [];
     
     // JSONBin API
     const JSONBIN_ID = "698f0f3f43b1c97be97bf5ee";
@@ -419,54 +420,78 @@
     ];
 
     function renderMessages() {
-      messagesContainer.innerHTML = '';
-      messages.forEach((msg, index) => {
-        const card = document.createElement('div');
-        card.classList.add('messageCard');
+      // If count matches, try to update in-place to avoid flicker
+      const emojis = ['❤️', '😂', '😏', '🔥'];
 
-        const nicknameEl = document.createElement('div');
-        nicknameEl.classList.add('nickname');
-        nicknameEl.textContent = `${msg.nickname}:`;
+      if (prevMessages.length === messages.length && messagesContainer.children.length === messages.length) {
+        // update only changed messages
+        messages.forEach((msg, index) => {
+          const prev = prevMessages[index];
+          if (JSON.stringify(prev) === JSON.stringify(msg)) return; // no change
 
-        const textEl = document.createElement('div');
-        textEl.classList.add('text');
-        textEl.textContent = msg.text;
+          const card = messagesContainer.children[index];
+          if (!card) return;
 
-        card.appendChild(nicknameEl);
-        card.appendChild(textEl);
+          const nicknameEl = card.querySelector('.nickname');
+          const textEl = card.querySelector('.text');
+          nicknameEl.textContent = `${msg.nickname}:`;
+          textEl.textContent = msg.text;
 
-        const emojiDiv = document.createElement('div');
-        emojiDiv.classList.add('emojiButtons');
+          const counts = card.querySelectorAll('.emoji-count');
+          emojis.forEach((emoji, i) => {
+            if (counts[i]) counts[i].textContent = msg.reactions?.[emoji] || 0;
+          });
+        });
+      } else {
+        // Full rebuild but use a fragment to minimize reflow
+        const frag = document.createDocumentFragment();
+        messages.forEach((msg) => {
+          const card = document.createElement('div');
+          card.classList.add('messageCard');
 
-        const emojis = ['❤️', '😂', '😏', '🔥'];
-        emojis.forEach(emoji => {
-          const btn = document.createElement('button');
-          btn.innerHTML = `${emoji} <span class="emoji-count">${msg.reactions?.[emoji] || 0}</span>`;
+          const nicknameEl = document.createElement('div');
+          nicknameEl.classList.add('nickname');
+          nicknameEl.textContent = `${msg.nickname}:`;
 
-          if (msg.reactions?.[emoji]) {
-            btn.classList.add('liked');
-          }
+          const textEl = document.createElement('div');
+          textEl.classList.add('text');
+          textEl.textContent = msg.text;
 
-          btn.onclick = (e) => {
-            e.stopPropagation();
-            if (!msg.reactions) {
-              msg.reactions = {};
-            }
-            if (!msg.reactions[emoji]) {
-              msg.reactions[emoji] = 0;
-            }
-            msg.reactions[emoji]++;
-            saveMessages();
-            renderMessages();
-            launchConfetti();
-          };
+          card.appendChild(nicknameEl);
+          card.appendChild(textEl);
 
-          emojiDiv.appendChild(btn);
+          const emojiDiv = document.createElement('div');
+          emojiDiv.classList.add('emojiButtons');
+
+          emojis.forEach(emoji => {
+            const btn = document.createElement('button');
+            btn.innerHTML = `${emoji} <span class="emoji-count">${msg.reactions?.[emoji] || 0}</span>`;
+            if (msg.reactions?.[emoji]) btn.classList.add('liked');
+
+            btn.onclick = (e) => {
+              e.stopPropagation();
+              if (!msg.reactions) msg.reactions = {};
+              if (!msg.reactions[emoji]) msg.reactions[emoji] = 0;
+              msg.reactions[emoji]++;
+              saveMessages();
+              // update this card's count without full rerender
+              const count = btn.querySelector('.emoji-count');
+              if (count) count.textContent = msg.reactions[emoji];
+              launchConfetti();
+            };
+
+            emojiDiv.appendChild(btn);
+          });
+
+          card.appendChild(emojiDiv);
+          frag.appendChild(card);
         });
 
-        card.appendChild(emojiDiv);
-        messagesContainer.appendChild(card);
-      });
+        messagesContainer.innerHTML = '';
+        messagesContainer.appendChild(frag);
+      }
+
+      prevMessages = JSON.parse(JSON.stringify(messages));
     }
 
     postButton.onclick = () => {
